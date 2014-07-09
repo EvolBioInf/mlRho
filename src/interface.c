@@ -108,7 +108,7 @@ Args *getArgs(int argc, char *argv[]){
 }
 
 
-void printUsage(char *version){
+void printUsage(){
   printf("Usage: mlRho [options] [inputFile(s)]\n");
   printf("Maximum likelihood estimation of population mutation, recombination, and disequilibrium measures\n");
   printf("Example: mlRho -n test -M 0\n");
@@ -133,39 +133,43 @@ void printUsage(char *version){
   exit(0);
 }
 
-void printSplash(char *version){
-  printf("***********************************************************\n");
-  printf("*                  mlRho, version %s                     *\n", version);
-  printf("*    ML Estimation of Mutation and Recombination Rate     *\n");
-  printf("*  Bernhard Haubold, Peter Pfaffelhuber, Michael Lynch    *\n");
-  printf("*---------------------------------------------------------*\n");
-  printf("* REFERENCES                                              *\n");
-  printf("* 1) Lynch, M. (2008). Estimation of nucleotide           *\n");
-  printf("*    diversity, disequilibrium coefficients, and mutation *\n");
-  printf("*    rates from high-coverage genome-sequencing projects. *\n");
-  printf("*    Mol. Biol. Evol., 25:2409--2419.                     *\n");
-  printf("* 2) Haubold, B., Pfaffelhuber, P. and Lynch, M.          *\n");
-  printf("*    (2009). mlRho - A program for estimating the pop-    *\n");
-  printf("*    ulation mutation and recombination rates from shot-  *\n");
-  printf("*    gun-sequenced diploid genomes. Mol. Ecol., 19:277-   *\n");
-  printf("*    284.                                                 *\n");
-  printf("* 3) Thota, A., Haubold, B., Michael, S, Doak,T.,         *\n");
-  printf("*    Xu, S., and Henschel, R. (2013). Making campus       *\n");
-  printf("*    bridging work for researchers: a case study with     *\n");
-  printf("*    mlRho. In: Proceedings of the Conference on Extreme  *\n");
-  printf("*    Science and Engineering Discovery Environment:       *\n");
-  printf("*    Gateway to Discovery, 17:1-17:8. ACM, New York.      *\n");
-  printf("*                                                         *\n");  
-  printf("* CONTACT                                                 *\n");
-  printf("* Code maintained by Bernhard Haubold,                    *\n");
-  printf("* haubold@evolbio.mpg.de                                  *\n");
-  printf("*                                                         *\n");
-  printf("* LICENSE                                                 *\n");
-  printf("* This software is distributed under the GNU General      *\n");
-  printf("* Public License. You should have received a copy         *\n");
-  printf("* of the licence together with this software. If          *\n");
-  printf("* not, see http://www.gnu.org/licenses/.                  *\n");
-  printf("***********************************************************\n");
+void printSplash(){
+  const char *str = {
+    "***********************************************************\n"
+    "*                  mlRho, version " VERSION "                     *\n"
+    "*    ML Estimation of Mutation and Recombination Rate     *\n"
+    "*  Bernhard Haubold, Peter Pfaffelhuber, Michael Lynch    *\n"
+    "*---------------------------------------------------------*\n"
+    "* REFERENCES                                              *\n"
+    "* 1) Lynch, M. (2008). Estimation of nucleotide           *\n"
+    "*    diversity, disequilibrium coefficients, and mutation *\n"
+    "*    rates from high-coverage genome-sequencing projects. *\n"
+    "*    Mol. Biol. Evol., 25:2409--2419.                     *\n"
+    "* 2) Haubold, B., Pfaffelhuber, P. and Lynch, M.          *\n"
+    "*    (2009). mlRho - A program for estimating the pop-    *\n"
+    "*    ulation mutation and recombination rates from shot-  *\n"
+    "*    gun-sequenced diploid genomes. Mol. Ecol., 19:277-   *\n"
+    "*    284.                                                 *\n"
+    "* 3) Thota, A., Haubold, B., Michael, S, Doak,T.,         *\n"
+    "*    Xu, S., and Henschel, R. (2013). Making campus       *\n"
+    "*    bridging work for researchers: a case study with     *\n"
+    "*    mlRho. In: Proceedings of the Conference on Extreme  *\n"
+    "*    Science and Engineering Discovery Environment:       *\n"
+    "*    Gateway to Discovery, 17:1-17:8. ACM, New York.      *\n"
+    "*                                                         *\n"  
+    "* CONTACT                                                 *\n"
+    "* Code maintained by Bernhard Haubold,                    *\n"
+    "* haubold@evolbio.mpg.de                                  *\n"
+    "*                                                         *\n"
+    "* LICENSE                                                 *\n"
+    "* This software is distributed under the GNU General      *\n"
+    "* Public License. You should have received a copy         *\n"
+    "* of the licence together with this software. If          *\n"
+    "* not, see http://www.gnu.org/licenses/.                  *\n"
+    "***********************************************************\n"
+  };
+
+  printf("%s", str);
   exit(0);
 }
 

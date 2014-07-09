@@ -22,18 +22,18 @@ void freeMem(Node **profilePairs, int numProfiles);
 
 int main(int argc, char *argv[]){
   Args *args;
-  char *version;
 
-  version = "2.7";
-  setprogname2("mlRho");
   args = getArgs(argc, argv);
-  if(args->v)
-    printSplash(version);
-  if(args->h || args->e)
-    printUsage(version);
+
+  if(args->v){
+    printSplash();
+  }
+  if(args->h || args->e){
+    printUsage();
+  }
+
   runAnalysis(args);
   free(args);
-  free(progname());
   return 0;
 }
 

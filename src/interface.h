@@ -44,7 +44,10 @@ typedef struct args{
 } Args;
 
 Args *getArgs(int argc, char *argv[]);
-void printUsage(char *version);
-void printSplash(char *version);
+void printUsage();
+void printSplash();
+
+#define NAME "mlRho"
+#define VERSION "2.8pre"
 
 #endif
