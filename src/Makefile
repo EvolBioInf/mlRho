@@ -1,6 +1,6 @@
 # Comment with icc
 CC=gcc
-CFLAGS= -O3 -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 \
+CFLAGS= -O3 -Wall -Wshadow -pedantic -std=gnu99 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 \
 	-I/opt/local/include/ -L/opt/local/lib/   #-g  #-p  #-m64
 
 # Comment with gcc
