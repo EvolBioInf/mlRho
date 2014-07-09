@@ -46,15 +46,15 @@ void setPi(double pi);
 void setEpsilon(double ee);
 void rhoSetPi(double pi);
 void rhoSetEpsilon(double ee);
-void freeMlComp();
+void freeMlComp(void);
 void setFreqNuc(double *f);
 void setMaxCov(int m);
-int *getCoverages();
+int *getCoverages(void);
 double *getLones();
 double *getLtwos();
 
 double lOneDelta(int cov, int *profile, double ee);
 void writeLik(char *baseName, Result *result);
-Result *newResult();
+Result *newResult(void);
 
 #endif
