@@ -39,8 +39,8 @@ double piComp_getNumPos(Profile *profiles, int numProfiles);
 double deltaComp_getNumPos();
 /* void estimateDelta(Node *r, Args *args, Result *res, int np); */
 /* int estimateRho(Node *r, Args *args, Result *res, int np); */
-inline double lOne(int cov, int *profile, double ee);
-inline double lTwo(int cov, int *profile, double ee);
+double lOne(int cov, int *profile, double ee);
+double lTwo(int cov, int *profile, double ee);
 void iniMlComp(Profile *profiles, int numProfile);
 void setPi(double pi);
 void setEpsilon(double ee);
@@ -53,7 +53,7 @@ int *getCoverages();
 double *getLones();
 double *getLtwos();
 
-inline double lOneDelta(int cov, int *profile, double ee);
+double lOneDelta(int cov, int *profile, double ee);
 void writeLik(char *baseName, Result *result);
 Result *newResult();
 
