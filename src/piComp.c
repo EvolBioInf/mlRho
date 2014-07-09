@@ -306,7 +306,7 @@ void writeLik(char *baseName, Result *result){
 	double np;
 	FILE *fp;
 
-	int check = asnprintf( &fileName, "%s.lik", baseName);
+	int check = asprintf( &fileName, "%s.lik", baseName);
 	assert( check != -1);
 
 	fp = efopen(fileName,"wb");
@@ -336,7 +336,7 @@ FILE *openLikFile(char *baseName){
 
 	tag = (char *)emalloc(4*sizeof(char));
 
-	check = asnprintf( &fileName, "%s.lik", baseName);
+	check = asprintf( &fileName, "%s.lik", baseName);
 	assert( check != -1);
 
 	if(stat(fileName,&stbuf) != -1){
