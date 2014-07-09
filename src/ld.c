@@ -23,9 +23,10 @@ FILE *iniLdAna(Args *args){
 	char *tag;
 	FILE *fp;
 	ContigDescr *cp;
-	int i, max, n, numRead;
+	int i, max, n;
 
 	int check;
+	size_t numRead;
 
 	/* get contig lengths from file */
 	tag = (char *)emalloc(4*sizeof(char));
@@ -37,8 +38,9 @@ FILE *iniLdAna(Args *args){
 	numRead = fread(tag,sizeof(char),3,fp);
 	assert(numRead == 3);
 	tag[3] = '\0';
-	if(strcmp(tag,"con") != 0)
-		assert(0);
+
+	assert( strcmp(tag,"con") == 0 );
+
 	cp = (ContigDescr *)emalloc(sizeof(ContigDescr));
 	numRead = fread(&n,sizeof(int),1,fp);
 	assert(numRead == 1);
@@ -58,13 +60,15 @@ FILE *iniLdAna(Args *args){
 	cp->posBuf = (Position *)emalloc(max*sizeof(Position));
 	setContigDescr(cp);
 
+	free(fileName);
 	/* get file pointer for position file */
-	fileName = strcpy(fileName,args->n);
-	fileName = strcat(fileName,".pos");
+	check = asprintf( &fileName, "%s.pos", args->n );
+	assert( check != -1);
+
 	fp = efopen(fileName,"rb");
 	numRead = fread(tag,sizeof(char),3,fp);
-	if(strcmp(tag,"pos") != 0)
-		assert(0);
+	assert( strcmp(tag, "pos") == 0 );
+
 	free(fileName);
 	free(tag);
 	return fp;
