@@ -20,6 +20,5 @@ typedef struct contigDescr{
 
 ContigDescr *getContigDescr();
 FILE *iniLdAna(Args *args);
-ContigDescr *getContigDescr();
 char *filterPro(double pi, double inclFract);
 #endif
