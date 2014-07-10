@@ -1,3 +1,9 @@
+# Binaries
 *.o
 src/mlRho
+
+# Testfiles
+profileDb*
+*seed*
+*Seed*
 
