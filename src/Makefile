@@ -19,14 +19,17 @@ DIRECTORY= MlRho
 VERSION= 2.7
 
 # The make rule for the executable
-.PHONY : all
-all : $(EXECFILE)
+.PHONY: all
+all: $(EXECFILE) inspectPro
 
-$(EXECFILE) : $(OBJFILES)
-	$(CC) $(CFLAGS) -o $(EXECFILE) $(OBJFILES) $(LIBS)	
+$(EXECFILE): $(OBJFILES)
+	$(CC) $(CFLAGS) -o $(EXECFILE) $(OBJFILES) $(LIBS)
+
+inspectPro: inspectPro.o ip_interface.o eprintf.o
+	$(CC) $(CFLAGS) $^ -o $@
 
 # Other Standard make rules
-lint : 
+lint: 
 	lint $(SRCFILES) | more
 
 clean:
