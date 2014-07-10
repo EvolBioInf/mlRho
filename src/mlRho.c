@@ -37,11 +37,26 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 
+void printDeltaRho(int i, int pos, Result *r){
+	static const char *fmt = {
+		"%d\t%.0f\t\t\t\t\t\t\t\t\t%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\n"
+	};
+
+	printf(fmt, i, pos, r->l, r->dLo, r->de, r->dUp, r->rLo, r->rh, r->rUp);
+}
+
+void printPi(int dunno, int pos, Result *r){
+	static const char *fmt = {
+		"%d\t%.0f\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e\n"
+	};
+
+	printf(fmt, dunno, pos, r->pLo, r->pi, r->pUp, r->eLo, r->ee, r->eUp, r->l);
+}
+
 void runAnalysis(Args *args){
 	Result *r;
 	int i;
 	int numProfiles;
-	char *headerPi, *headerDeltaRho, *outStrPi, *outStrDeltaRho;
 	char *inclPro; /* indicates whether or not to include a profile */
 	double numPos, c, n;
 	Profile *profiles;
@@ -49,19 +64,20 @@ void runAnalysis(Args *args){
 	FILE *fp;
 	Node **profilePairs;
 
-	headerPi = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\n";
-	headerDeltaRho = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\t\tdelta\t\t\t\trho\n";
-	outStrPi = "%d\t%.0f\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e\n";
-	outStrDeltaRho = "%d\t%.0f\t\t\t\t\t\t\t\t\t%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\n";
+	static const char * headerPi = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\n";
+	static const char * headerDeltaRho = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\t\tdelta\t\t\t\trho\n";
+
 	r = newResult();
 	/* heterozygosity analysis */
 	readProfiles(args->n);
 	numProfiles = getNumProfiles();
 	profiles = getProfiles();
-	if(args->M == 0 && numProfiles)
+
+	if(args->M == 0 && numProfiles){
 		printf("%s", headerPi);
-	else
+	} else {
 		printf("%s", headerDeltaRho);
+	}
 
 	if(numProfiles){
 		r = estimatePi(profiles,numProfiles,args,r);
@@ -75,7 +91,7 @@ void runAnalysis(Args *args){
 			r->pi /= c;
 			r->pUp /= c;
 		}
-		printf(outStrPi,0,numPos,r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l);
+		printPi(0, numPos, r);
 	}
 	fflush(NULL);
 
@@ -90,7 +106,7 @@ void runAnalysis(Args *args){
 	for(i=args->m;i<=args->M;i+=args->S){
 		profilePairs = getProfilePairs(numProfiles, inclPro, contigDescr, fp, args, i);
 		r = estimateDelta(profilePairs,numProfiles,args,r,i);
-		printf(outStrDeltaRho,i,getNumPos(),r->l,r->dLo,r->de,r->dUp,r->rLo,r->rh,r->rUp);
+		printDeltaRho(i, getNumPos(), r);
 		fflush(NULL);
 	}
 	fclose(fp);
