@@ -1,12 +1,7 @@
-# Comment with icc
-CC=gcc
+#CC=gcc
 CFLAGS= -O3 -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 \
 	-I/opt/local/include/ -L/opt/local/lib/   #-g  #-p  #-m64
 
-# Comment with gcc
-#CC=icc
-#CFLAGS= -O3 -fast -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 \
-	-I/opt/local/include/ -L/opt/local/lib/   #-g  #-p  #-m64
 
 # The source files, object files, libraries and executable name.
 SRCFILES= mlRho.c eprintf.c stringUtil.c interface.c mlComp.c piComp.c profile.c ld.c profileTree.c deltaComp.c filterPro.c
@@ -19,14 +14,17 @@ DIRECTORY= MlRho
 VERSION= 2.7
 
 # The make rule for the executable
-.PHONY : all
-all : $(EXECFILE)
+.PHONY: all
+all: $(EXECFILE) formatPro
 
-$(EXECFILE) : $(OBJFILES)
-	$(CC) $(CFLAGS) -o $(EXECFILE) $(OBJFILES) $(LIBS)	
+$(EXECFILE): $(OBJFILES)
+	$(CC) $(CFLAGS) -o $(EXECFILE) $(OBJFILES) $(LIBS)
+
+formatPro: fp_interface.o formatPro.o fp_profileTree.o eprintf.o
+	$(CC) $(CFLAGS) -o formatPro $^ $(LIBS)
 
 # Other Standard make rules
-lint : 
+lint:
 	lint $(SRCFILES) | more
 
 clean:
