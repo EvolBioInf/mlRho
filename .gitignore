@@ -1,6 +1,8 @@
 # Binaries
 *.o
 src/mlRho
+formatPro
+inspectPro
 
 # Testfiles
 profileDb*
