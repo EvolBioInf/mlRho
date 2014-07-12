@@ -17,7 +17,7 @@ Args *args;
 
 Args *getArgs(int argc, char *argv[]){
   int c;
-  char *optString = "P:E:D:t:s:i:hvM:lLm:S:n:Iof:c";
+  char *optString = "P:E:D:T:s:i:t:hvM:lLm:S:n:Iof:c";
 
   args = (Args *)emalloc(sizeof(Args));
   args->P = INI_PI;
@@ -28,6 +28,8 @@ Args *getArgs(int argc, char *argv[]){
   args->s = STEP_SIZE;
   args->S = DEFAULT_S;
   args->i = MAX_IT;
+  args->f = 1.0;
+  args->T = 1;
   args->o = 0;
   args->I = 0;
   args->M = INT_MAX;
@@ -47,6 +49,9 @@ Args *getArgs(int argc, char *argv[]){
       break;
     case 'E':                           /* initial error rate, epsilon */
       args->E = atof(optarg);
+      break;
+    case 'T':                           /* number of threads */
+      args->T = atoi(optarg);
       break;
     case 'c':                           /* corrected diversity computation */
       args->c = 1;
@@ -117,6 +122,7 @@ void printUsage(char *version){
   printf("\t[-m <NUM> minimum distance analyzed in rho computation; default: 1]\n");
   printf("\t[-M <NUM> maximum distance analyzed in rho computation; default: all]\n");
   printf("\t[-S <NUM> step size in rho computation; default: %d]\n",DEFAULT_S);
+  printf("\t[-T <NUM> number of threads for disequilibrium analysis; default: 1]\n");
   printf("\t[-f <NUM> fraction of likelihood weight included in LD analysis; default: %.2f]\n",DEFAULT_F);
   printf("\t[-o high memory mode; may be faster for disequilibrium analysis]\n");
   printf("\t[-I write likelihoods to file; default: likelihoods not written to file]\n");

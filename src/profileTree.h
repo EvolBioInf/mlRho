@@ -17,7 +17,14 @@ typedef struct node{  /* the tree node: */
   struct node *right; /* right child */
 }Node;
 
-Node **getProfilePairs(int numProfiles, char *inclPro, ContigDescr *contigDescr, FILE *fp, Args *args, int d);
+typedef struct profilePairs{
+  int numProfiles;
+  int dist;
+  long numPos;
+  Node **pairs;
+}ProfilePairs;
+
+ProfilePairs *getProfilePairs(int numProfiles, char *inclPro, ContigDescr *contigDescr, FILE *fp, Args *args, int d);
 void printTree(FILE *fp, Node *node);
 void freeTree(Node *n);
 void setTestMode();
@@ -32,4 +39,5 @@ Node *getSummarizedProfiles(Args *args);
 FILE *iniLinkAna(Args *args);
 int getNumNode();
 void readPositions(FILE *fp, ContigDescr *cd);
+void freeProfilePairs(ProfilePairs *pp);
 #endif

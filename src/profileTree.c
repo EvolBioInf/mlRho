@@ -17,39 +17,44 @@
 #include "profileTree.h"
 #include "ld.h"
 
-double numPos;
+ProfilePairs *initProfilePairs(ProfilePairs *pp, int numProfiles);
 Node **resetProfilePairs(Node **profilePairs, int numProfiles);
-Node **countPairs(Node **pairs, int numProfiles, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory);
+ProfilePairs *countPairs(ProfilePairs *pp, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory);
 
-Node **getProfilePairs(int numProfiles, char *inclPro, ContigDescr *contigDescr, FILE *fp, Args *args, int d){
-  static Node **profilePairs = NULL;
+ProfilePairs *getProfilePairs(int numProfiles, char *inclPro, ContigDescr *contigDescr, FILE *fp, Args *args, int d){
   int i;
+  ProfilePairs *pp = NULL;
 
-  numPos = 0;
-  profilePairs = resetProfilePairs(profilePairs,numProfiles);
+  pp = initProfilePairs(pp,numProfiles);
+  pp->numPos = 0;
   if(args->L){
     for(i=0;i<args->S;i++)
-      profilePairs = countPairs(profilePairs, numProfiles, inclPro, contigDescr, fp, d+i, args->o);
+      pp = countPairs(pp, inclPro, contigDescr, fp, d+i, args->o);
   }else
-    profilePairs = countPairs(profilePairs, numProfiles, inclPro, contigDescr, fp, d, args->o);
+    pp = countPairs(pp, inclPro, contigDescr, fp, d, args->o);
 
-  return profilePairs;
+  return pp;
 }
 
-Node **resetProfilePairs(Node **profilePairs, int numProfiles){
+ProfilePairs *initProfilePairs(ProfilePairs *pp, int numProfiles){
   int i;
 
-  if(profilePairs == NULL){
-    profilePairs = (Node **)emalloc(numProfiles * sizeof(Node *));
-    for(i=0;i<numProfiles;i++)
-      profilePairs[i] = NULL;
-  }else{
-    for(i=0;i<numProfiles;i++){
-      freeTree(profilePairs[i]);
-      profilePairs[i] = NULL;
-    }
-  }
-  return profilePairs;
+  pp = (ProfilePairs *)emalloc(sizeof(ProfilePairs));
+  pp->numPos = 0;
+  pp->numProfiles = numProfiles;
+  pp->pairs = (Node **)emalloc(numProfiles*sizeof(Node *));
+  for(i=0;i<numProfiles;i++)
+    pp->pairs[i] = NULL;
+
+  return pp;
+}  
+
+void freeProfilePairs(ProfilePairs *pp){
+  int i;
+  for(i=0;i<pp->numProfiles;i++)
+    freeTree(pp->pairs[i]);
+  free(pp->pairs);
+  free(pp);
 }
 
 /* readPositions: read position information into contig descriptor
@@ -68,10 +73,12 @@ void readPositions(FILE *fp, ContigDescr *cd){
 
 }
 
-Node **countPairs(Node **pairs, int numProfiles, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory){
+ProfilePairs *countPairs(ProfilePairs *pp, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory){
   int a, b, i, l, r, tmp, numRead, bound;
   Position *pb;
+  Node **pairs;
  
+  pairs = pp->pairs;
   pb = NULL;
   if(!memory){
     fseek(fp,3,SEEK_SET);
@@ -102,17 +109,15 @@ Node **countPairs(Node **pairs, int numProfiles, char *inclPro, ContigDescr *con
 	    a = tmp;
 	  }
 	  pairs[b] = addTree(pairs[b],a);
-	  numPos++;
+	  pp->numPos++;
 	}
       }
       r++;
       l++;
     }
   }
-  return pairs;
+  return pp;
 }
-
-
 
 /* addTree: add key to tree */
 Node *addTree(Node *node, int key){
@@ -151,7 +156,4 @@ void freeTree(Node *n){
   }
 }
 
-double getNumPos(){
-  return numPos;
-}
 

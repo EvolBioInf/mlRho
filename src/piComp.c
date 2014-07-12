@@ -52,10 +52,12 @@ Result *estimatePi(Profile *profiles, int numProfiles, Args *args, Result *resul
   double size;
   FILE *fp;
 
-  if((fp = openLikFile(args->n)) != NULL && !args->I){
-    result = readLik(fp,numProfiles,result);
-    fclose(fp);
-    return result;
+  if(!args->I){
+    if((fp = openLikFile(args->n)) != NULL){
+      result = readLik(fp,numProfiles,result);
+      fclose(fp);
+      return result;
+    }
   }
 
   np = 2;

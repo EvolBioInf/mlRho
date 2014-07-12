@@ -34,7 +34,7 @@ typedef struct result{
 }Result;
 
 Result *estimatePi(Profile *profiles, int numProfiles, Args *args, Result *result);
-Result *estimateDelta(Node **profilePairs, int numProfiles, Args *args, Result *result, int dist);
+Result *estimateDelta(ProfilePairs *pp, Args *args, Result *result);
 double piComp_getNumPos(Profile *profiles, int numProfiles);
 double deltaComp_getNumPos();
 /* void estimateDelta(Node *r, Args *args, Result *res, int np); */
@@ -56,5 +56,5 @@ double *getLtwos();
 inline double lOneDelta(int cov, int *profile, double ee);
 void writeLik(char *baseName, Result *result);
 Result *newResult();
-
+Result *copyResult(Result *r);
 #endif

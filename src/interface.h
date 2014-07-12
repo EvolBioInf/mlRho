@@ -30,13 +30,13 @@ typedef struct args{
   int i;    /* maximum number of iterations */
   int m;    /* minimum distance in LD analysis */
   int M;    /* maximum distance in LD analysis */
+  int T;    /* number of threads */
   char c;   /* corrected diversity measure ? */
   char l;   /* compute delta */
   char I;   /* print likelihood values */
   char L;   /* lump the number of distance classes indicated by "step"? */
   char r;   /* print profiles and exit */
   char v;   /* print program version etc. */
-  char T;   /* test mode */
   char o;   /* high memory mode */
   char h;   /* help message? */
   char e;   /* error message? */

@@ -19,21 +19,19 @@
 #include "mlComp.h"
 #include "eprintf.h"
 #include "profile.h"
+#include "profileTree.h"
+#include "deltaComp.h"
 
 double globalPi, globalEpsilon;
-int globalDist;
-Node **globalProfilePairs;
-int globalNumProfiles;
 double *lOnes, *lTwos;
-double likelihood;
 
 double rhoFromDelta(double t, double d);
-void lik(double de);
+double lik(double de, ProfilePairs *pp);
 double myF(const gsl_vector *v, void *params);
 double confFun(double x, void *params);
-void conf(Args *args, Result *result);
+void conf(Args *args, DeltaParam *result);
 double iterate(Args *args, gsl_root_fsolver *s, double xLo, double xHi);
-void traverse(int a, Node *np, double h0, double h2, double complementHalf);
+void traverse(int a, Node *np, double h0, double h2, double complementHalf, double *likelihood);
 
 /* estimateDelta: estimate pi, delta, and epsilon using 
  * the Nelder-Mead Simplex algorithm; code adapted 
@@ -42,7 +40,7 @@ void traverse(int a, Node *np, double h0, double h2, double complementHalf);
  * Scientific Library Reference Manual. Edition 1.6, 
  * for GSL Version 1.6, 17 March 2005, p 472f.
  */
-Result *estimateDelta(Node **profilePairs, int numProfiles, Args *args, Result *result, int dist){
+Result *estimateDelta(ProfilePairs *pp, Args *args, Result *result){
   const gsl_multimin_fminimizer_type *T;
   gsl_multimin_fminimizer *s;
   gsl_vector *ss, *x;
@@ -50,16 +48,14 @@ Result *estimateDelta(Node **profilePairs, int numProfiles, Args *args, Result *
   size_t iter;
   int status, numPara;
   double size;
+  DeltaParam *deltaParam;
 
-  globalProfilePairs = profilePairs;
-  globalNumProfiles = numProfiles;
   T =  gsl_multimin_fminimizer_nmsimplex;
   s = NULL;
   iter = 0;
   numPara = 1; /* one parameter estimation */
   globalPi = result->pi;
   globalEpsilon = result->ee;
-  globalDist = dist;
   /* initialize vertex size vector */
   ss = gsl_vector_alloc(numPara);
   /* set all step sizes */
@@ -70,7 +66,7 @@ Result *estimateDelta(Node **profilePairs, int numProfiles, Args *args, Result *
   /* initialize method and iterate */
   minex_func.f = &myF;
   minex_func.n = numPara;
-  minex_func.params = (void *)NULL;
+  minex_func.params = pp;
   s = gsl_multimin_fminimizer_alloc(T, numPara);
   gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
   do{
@@ -86,10 +82,16 @@ Result *estimateDelta(Node **profilePairs, int numProfiles, Args *args, Result *
   result->de = gsl_vector_get(s->x, 0);
   result->l = s->fval;
   result->i = iter;
-  result->rh = rhoFromDelta(result->pi,result->de)/dist;
-  conf(args, result);
-  result->rLo = rhoFromDelta(result->pi,result->dUp)/dist;
-  result->rUp = rhoFromDelta(result->pi,result->dLo)/dist;
+  result->rh = rhoFromDelta(result->pi,result->de)/pp->dist;
+  deltaParam = (DeltaParam *)emalloc(sizeof(DeltaParam));
+  deltaParam->de = result->de;
+  deltaParam->l = result->l;
+  deltaParam->pp = pp;
+  conf(args, deltaParam);
+  result->dLo = deltaParam->dLo;
+  result->dUp = deltaParam->dUp;
+  result->rLo = rhoFromDelta(result->pi,result->dUp)/pp->dist;
+  result->rUp = rhoFromDelta(result->pi,result->dLo)/pp->dist;
   gsl_vector_free(x);
   gsl_vector_free(ss);
   gsl_multimin_fminimizer_free(s);
@@ -97,24 +99,23 @@ Result *estimateDelta(Node **profilePairs, int numProfiles, Args *args, Result *
   return result;
 }
 
-
 double myF(const gsl_vector* v, void *params){
   double de;
+  ProfilePairs *pp;
 
-  /* get delta */  
+  pp = (ProfilePairs *)params;
+  /* get delta */
   de = gsl_vector_get(v, 0);
   if(de < -1 || de > 1)
     return DBL_MAX;
   else
-    lik(de);
-
-  return -likelihood;
+    return -lik(de, pp);
 }
 
-void lik(double de){
+double lik(double de, ProfilePairs *pp){
   int i;
   double pi, h0, h2;
-  double complementHalf;
+  double complementHalf, likelihood;
 
   pi = globalPi;
   h0 = 1./(1.+pi)/(1.+pi) + de*pi/(1.+pi)/(1.+pi);
@@ -123,45 +124,45 @@ void lik(double de){
   likelihood = 0.;
   lOnes = getLones();
   lTwos = getLtwos();
-  for(i=0;i<globalNumProfiles;i++)
-    traverse(i,globalProfilePairs[i],h0,h2,complementHalf);
-  
+  for(i=0;i<pp->numProfiles;i++)
+    traverse(i,pp->pairs[i],h0,h2,complementHalf,&likelihood);
+
+  return likelihood;
 }
 
 
-void traverse(int a, Node *np, double h0, double h2, double complementHalf){
+void traverse(int a, Node *np, double h0, double h2, double complementHalf, double *likelihood){
   double li;
   int b;
 
   if(np != NULL){
-    traverse(a,np->left,h0,h2,complementHalf);
+    traverse(a,np->left,h0,h2,complementHalf,likelihood);
 
     b = np->key;
     li = h0*lOnes[a]*lOnes[b]
        + h2*lTwos[a]*lTwos[b]
        + complementHalf*(lOnes[a]*lTwos[b]+lTwos[a]*lOnes[b]);
     if(li>0)
-      likelihood += log(li) * np->n;
+      *likelihood += log(li) * np->n;
     else
-      likelihood += log(DBL_MIN) * np->n;
+      *likelihood += log(DBL_MIN) * np->n;
 
-    traverse(a,np->right,h0,h2,complementHalf);
+    traverse(a,np->right,h0,h2,complementHalf,likelihood);
   }
 }
 
 /* conFun: called for confidence interval estimation of pi */
 double confFun(double x, void *params){
-  Result *res;
+  DeltaParam *res;
   double l;
 
-  res = (Result *)params;
-  lik(x);
-  l = likelihood + res->l + 2.;
+  res = (DeltaParam *)params;
+  l = lik(x,res->pp) + res->l + 2.;
 
   return l;
 }
 
-void conf(Args *args, Result *result){
+void conf(Args *args, DeltaParam *result){
   const gsl_root_fsolver_type *solverType;
   gsl_root_fsolver *s;
   gsl_function fun;

@@ -1,7 +1,7 @@
 # Comment with icc
 CC=gcc
-CFLAGS= -O3 -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 \
-	-I/opt/local/include/ -L/opt/local/lib/   #-g  #-p  #-m64
+CFLAGS= -O3 -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 -fopenmp \
+	-I/opt/local/include/ -L/opt/local/lib/   -g  #-p  #-m64
 
 # Comment with gcc
 #CC=icc
@@ -23,7 +23,7 @@ VERSION= 2.7
 all : $(EXECFILE)
 
 $(EXECFILE) : $(OBJFILES)
-	$(CC) $(CFLAGS) -o $(EXECFILE) $(OBJFILES) $(LIBS)	
+	$(CC) $(CFLAGS) -fopenmp -o $(EXECFILE) $(OBJFILES) $(LIBS)
 
 # Other Standard make rules
 lint : 

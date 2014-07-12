@@ -138,7 +138,48 @@ void freeMlComp()
 
 Result *newResult(){
   Result *r;
-  r = (Result *)calloc(1,sizeof(Result));
-  assert(r);
+
+  r = (Result *)emalloc(sizeof(Result));
+  r->pi = 0.0;
+  r->ee = 0.0;
+  r->de = 0.0;
+  r->rh = 0.0;
+  r->rhoFromDelta = 0.0;
+  r->l = 0.0;
+  r->pLo = 0.0;
+  r->pUp = 0.0;
+  r->eLo = 0.0;
+  r->eUp = 0.0;
+  r->dLo = 0.0;
+  r->dUp = 0.0;
+  r->rLo = 0.0;
+  r->rUp = 0.0;
+  r->i = 0;
+  r->type = 5;
+
   return r;
+}
+
+Result *copyResult(Result *r){
+  Result *nr;
+  
+  nr = newResult();
+  nr->pi = r->pi;
+  nr->ee = r->ee;
+  nr->de = r->de;
+  nr->rh = r->rh;
+  nr->rhoFromDelta = r->rhoFromDelta;
+  nr->l = r->l;
+  nr->pLo = r->pLo;
+  nr->pUp = r->pUp;
+  nr->eLo = r->eLo;
+  nr->eUp = r->eUp;
+  nr->dLo = r->dLo;
+  nr->dUp = r->dUp;
+  nr->rLo = r->rLo;
+  nr->rUp = r->rUp;
+  nr->i = r->i;
+  nr->type = r->type;
+
+  return nr;
 }

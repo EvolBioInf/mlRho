@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
+#include <omp.h>
 #include "eprintf.h"
 #include "interface.h"
 #include "ld.h"
@@ -18,7 +19,7 @@
 #include "mlComp.h"
 
 void runAnalysis(Args *args);
-void freeMem(Node **profilePairs, int numProfiles);
+void freeMem();
 
 int main(int argc, char *argv[]){
   Args *args;
@@ -38,22 +39,24 @@ int main(int argc, char *argv[]){
 }
 
 void runAnalysis(Args *args){
-  Result *r;
-  int i;
+  Result *r, *piRes, **results;
+  int i, *distArr, numRes;
   int numProfiles;
   char *headerPi, *headerDeltaRho, *outStrPi, *outStrDeltaRho;
   char *inclPro; /* indicates whether or not to include a profile */
   double numPos, c, n;
   Profile *profiles;
+  long *numPosArr;
   ContigDescr *contigDescr;
   FILE *fp;
-  Node **profilePairs;
+  ProfilePairs *profilePairs;
+
 
   headerPi = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\n";
   headerDeltaRho = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\t\tdelta\t\t\t\trho\n";
   outStrPi = "%d\t%.0f\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e\n";
-  outStrDeltaRho = "%d\t%.0f\t\t\t\t\t\t\t\t\t%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\n";
-  r = newResult();
+  outStrDeltaRho = "%d\t%ld\t\t\t\t\t\t\t\t\t%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\n";
+  piRes = newResult();
   /* heterozygosity analysis */
   readProfiles(args->n);
   numProfiles = getNumProfiles();
@@ -63,32 +66,51 @@ void runAnalysis(Args *args){
   else
     printf("%s", headerDeltaRho);
   if(numProfiles){
-    r = estimatePi(profiles,numProfiles,args,r);
+    piRes = estimatePi(profiles,numProfiles,args,piRes);
     numPos = piComp_getNumPos(profiles, numProfiles);
     if(args->c){
       /* including the correction from Lynch (2008), p. 2412 */
       n = getCoverage();
       c = n*pow(0.5,n-1);
       c = 1-c;
-      r->pLo /= c;
-      r->pi /= c;
-      r->pUp /= c;
+      piRes->pLo /= c;
+      piRes->pi /= c;
+      piRes->pUp /= c;
     }
-    printf(outStrPi,0,numPos,r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l);
+    printf(outStrPi,0,numPos,piRes->pLo,piRes->pi,piRes->pUp,piRes->eLo,piRes->ee,piRes->eUp,piRes->l);
   }
   fflush(NULL);
   /* linkage analysis */
   fp = iniLdAna(args);
-  inclPro = filterPro(r->pi,args->f);
+  inclPro = filterPro(piRes->pi,args->f);
   contigDescr = getContigDescr();
   profilePairs = NULL;
   if(args->o)
     readPositions(fp, contigDescr);
+  numRes = (args->M - args->m + 1)/args->S + 1;
+  results = (Result **)emalloc(numRes*sizeof(Result *));
+  numPosArr = (long *)emalloc(numRes*sizeof(long));
+  distArr = (int *)emalloc(numRes*sizeof(int));
+  r = copyResult(piRes);
+  for(i=0;i<numRes;i++)
+    results[i] = copyResult(r);
+  free(r);
+  numRes = 0;
+  printf("args->T: %d\n",args->T);
+#pragma omp parallel for num_threads(args->T)
   for(i=args->m;i<=args->M;i+=args->S){
     profilePairs = getProfilePairs(numProfiles, inclPro, contigDescr, fp, args, i);
-    r = estimateDelta(profilePairs,numProfiles,args,r,i);
-    printf(outStrDeltaRho,i,getNumPos(),r->l,r->dLo,r->de,r->dUp,r->rLo,r->rh,r->rUp);
-    fflush(NULL);
+    profilePairs->dist = i;
+    r = results[numRes];
+    r = estimateDelta(profilePairs,args,r);
+    numPosArr[numRes] = profilePairs->numPos;
+    distArr[numRes] = i;
+    numRes++;
+    freeProfilePairs(profilePairs);
+  }
+  for(i=0;i<numRes;i++){
+    r = results[i];
+    printf(outStrDeltaRho,distArr[i],numPosArr[i],r->l,r->dLo,r->de,r->dUp,r->rLo,r->rh,r->rUp);
   }
   fclose(fp);
   if(args->I){ 
@@ -97,27 +119,28 @@ void runAnalysis(Args *args){
       n = getCoverage();
       c = n*pow(0.5,n-1);
       c = 1-c;
-      r->pLo *= c;
-      r->pi *= c;
-      r->pUp *= c;
+      piRes->pLo *= c;
+      piRes->pi *= c;
+      piRes->pUp *= c;
     }
-    writeLik(args->n,r);
+    writeLik(args->n,piRes);
   }
-  free(r);
-  freeMem(profilePairs, numProfiles);
+  for(i=0;i<numRes;i++)
+    free(results[i]);
+  free(results);
+  free(inclPro);
+  free(distArr);
+  free(numPosArr);
+  free(piRes);
+  freeMem();
 }
 
-void freeMem(Node **profilePairs, int numProfiles){
+void freeMem(){
   int i;
   double *lOnes, *lTwos;
   Profile *profiles;
   ContigDescr *cd;
 
-  if(profilePairs){
-    for(i=0;i<numProfiles;i++)
-      freeTree(profilePairs[i]);
-    free(profilePairs);
-  }
   cd = getContigDescr();
   if(cd){
     if(cd->pos){
