@@ -17,7 +17,7 @@
 #include "profileTree.h"
 #include "ld.h"
 
-ProfilePairs *initProfilePairs(ProfilePairs *pp, int numProfiles);
+ProfilePairs *newProfilePairs(int numProfiles);
 Node **resetProfilePairs(Node **profilePairs, int numProfiles);
 ProfilePairs *countPairs(ProfilePairs *pp, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory);
 
@@ -25,7 +25,7 @@ ProfilePairs *getProfilePairs(int numProfiles, char *inclPro, ContigDescr *conti
   int i;
   ProfilePairs *pp = NULL;
 
-  pp = initProfilePairs(pp,numProfiles);
+  pp = newProfilePairs(numProfiles);
   pp->numPos = 0;
   if(args->L){
     for(i=0;i<args->S;i++)
@@ -36,8 +36,9 @@ ProfilePairs *getProfilePairs(int numProfiles, char *inclPro, ContigDescr *conti
   return pp;
 }
 
-ProfilePairs *initProfilePairs(ProfilePairs *pp, int numProfiles){
+ProfilePairs *newProfilePairs(int numProfiles){
   int i;
+  ProfilePairs *pp;
 
   pp = (ProfilePairs *)emalloc(sizeof(ProfilePairs));
   pp->numPos = 0;

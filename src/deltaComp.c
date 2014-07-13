@@ -22,7 +22,6 @@
 #include "profileTree.h"
 #include "deltaComp.h"
 
-double globalPi, globalEpsilon;
 double *lOnes, *lTwos;
 
 double rhoFromDelta(double t, double d);
@@ -54,8 +53,6 @@ Result *estimateDelta(ProfilePairs *pp, Args *args, Result *result){
   s = NULL;
   iter = 0;
   numPara = 1; /* one parameter estimation */
-  globalPi = result->pi;
-  globalEpsilon = result->ee;
   /* initialize vertex size vector */
   ss = gsl_vector_alloc(numPara);
   /* set all step sizes */
@@ -95,6 +92,7 @@ Result *estimateDelta(ProfilePairs *pp, Args *args, Result *result){
   gsl_vector_free(x);
   gsl_vector_free(ss);
   gsl_multimin_fminimizer_free(s);
+  free(deltaParam);
   /* freeMlComp(); */
   return result;
 }
@@ -117,7 +115,7 @@ double lik(double de, ProfilePairs *pp){
   double pi, h0, h2;
   double complementHalf, likelihood;
 
-  pi = globalPi;
+  pi = pp->pi;
   h0 = 1./(1.+pi)/(1.+pi) + de*pi/(1.+pi)/(1.+pi);
   h2 = pi*pi/(1.+pi)/(1.+pi) + de*pi/(1.+pi)/(1.+pi);
   complementHalf = (1.-h0-h2)/2.;
@@ -216,10 +214,6 @@ double iterate(Args *args, gsl_root_fsolver *s, double xLo, double xHi){
   }while(status == GSL_CONTINUE && iter < args->i);
 
   return r;
-}
-
-void setPi(double pi){
-  globalPi = pi;
 }
 
 double rhoFromDelta(double t, double d){

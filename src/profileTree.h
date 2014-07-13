@@ -22,6 +22,7 @@ typedef struct profilePairs{
   int dist;
   long numPos;
   Node **pairs;
+  double pi;
 }ProfilePairs;
 
 ProfilePairs *getProfilePairs(int numProfiles, char *inclPro, ContigDescr *contigDescr, FILE *fp, Args *args, int d);

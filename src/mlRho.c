@@ -40,7 +40,7 @@ int main(int argc, char *argv[]){
 
 void runAnalysis(Args *args){
   Result *r, *piRes, **results;
-  int i, *distArr, numRes;
+  int i, *distArr, numRes, countRes;
   int numProfiles;
   char *headerPi, *headerDeltaRho, *outStrPi, *outStrDeltaRho;
   char *inclPro; /* indicates whether or not to include a profile */
@@ -92,23 +92,25 @@ void runAnalysis(Args *args){
   numPosArr = (long *)emalloc(numRes*sizeof(long));
   distArr = (int *)emalloc(numRes*sizeof(int));
   r = copyResult(piRes);
+  printf("numRes - 1: %d\n",numRes);
   for(i=0;i<numRes;i++)
     results[i] = copyResult(r);
   free(r);
-  numRes = 0;
+  countRes = 0;
   printf("args->T: %d\n",args->T);
 #pragma omp parallel for num_threads(args->T)
   for(i=args->m;i<=args->M;i+=args->S){
     profilePairs = getProfilePairs(numProfiles, inclPro, contigDescr, fp, args, i);
     profilePairs->dist = i;
-    r = results[numRes];
+    r = results[countRes];
+    profilePairs->pi = r->pi;
     r = estimateDelta(profilePairs,args,r);
-    numPosArr[numRes] = profilePairs->numPos;
-    distArr[numRes] = i;
-    numRes++;
+    numPosArr[countRes] = profilePairs->numPos;
+    distArr[countRes] = i;
+    countRes++;
     freeProfilePairs(profilePairs);
   }
-  for(i=0;i<numRes;i++){
+  for(i=0;i<countRes;i++){
     r = results[i];
     printf(outStrDeltaRho,distArr[i],numPosArr[i],r->l,r->dLo,r->de,r->dUp,r->rLo,r->rh,r->rUp);
   }
@@ -125,6 +127,7 @@ void runAnalysis(Args *args){
     }
     writeLik(args->n,piRes);
   }
+  printf("numRes - 2: %d\n",numRes);
   for(i=0;i<numRes;i++)
     free(results[i]);
   free(results);
