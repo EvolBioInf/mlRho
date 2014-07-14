@@ -128,8 +128,6 @@ void setFreqNuc(double *f)
 
 void freeMlComp()
 {
-  /* int i; */
-
   free(freqNuc);
   free(result);
   free(lngamma);

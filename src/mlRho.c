@@ -137,7 +137,6 @@ void runAnalysis(Args *args){
   free(numPosArr);
   free(piRes);
   freeMem();
-  freeMlComp();
 }
 
 void freeMem(){
