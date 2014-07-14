@@ -93,7 +93,6 @@ Result *estimateDelta(ProfilePairs *pp, Args *args, Result *result){
   gsl_vector_free(ss);
   gsl_multimin_fminimizer_free(s);
   free(deltaParam);
-  /* freeMlComp(); */
   return result;
 }
 

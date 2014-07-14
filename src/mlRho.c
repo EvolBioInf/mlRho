@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
   Args *args;
   char *version;
 
-  version = "2.7";
+  version = "parallel";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->v)
@@ -40,8 +40,8 @@ int main(int argc, char *argv[]){
 
 void runAnalysis(Args *args){
   Result *r, *piRes, **results;
-  int i, *distArr, numRes, countRes;
-  int numProfiles;
+  int i, *distArr, numRes, countRes = 0;
+  int numProfiles, x;
   char *headerPi, *headerDeltaRho, *outStrPi, *outStrDeltaRho;
   char *inclPro; /* indicates whether or not to include a profile */
   double numPos, c, n;
@@ -49,7 +49,7 @@ void runAnalysis(Args *args){
   long *numPosArr;
   ContigDescr *contigDescr;
   FILE *fp;
-  ProfilePairs *profilePairs;
+  ProfilePairs **profilePairs;
 
 
   headerPi = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\n";
@@ -84,31 +84,30 @@ void runAnalysis(Args *args){
   fp = iniLdAna(args);
   inclPro = filterPro(piRes->pi,args->f);
   contigDescr = getContigDescr();
-  profilePairs = NULL;
   if(args->o)
     readPositions(fp, contigDescr);
-  numRes = (args->M - args->m + 1)/args->S + 1;
+  numRes = args->M - args->m + 1;
   results = (Result **)emalloc(numRes*sizeof(Result *));
   numPosArr = (long *)emalloc(numRes*sizeof(long));
   distArr = (int *)emalloc(numRes*sizeof(int));
+  profilePairs = (ProfilePairs **)emalloc(numRes*sizeof(ProfilePairs *));
   r = copyResult(piRes);
-  printf("numRes - 1: %d\n",numRes);
   for(i=0;i<numRes;i++)
     results[i] = copyResult(r);
   free(r);
   countRes = 0;
-  printf("args->T: %d\n",args->T);
-#pragma omp parallel for num_threads(args->T)
+#pragma omp parallel for private(x) num_threads(args->T)
+  /* for(i=args->m;i<=args->M;i+=args->S){ */
   for(i=args->m;i<=args->M;i+=args->S){
-    profilePairs = getProfilePairs(numProfiles, inclPro, contigDescr, fp, args, i);
-    profilePairs->dist = i;
-    r = results[countRes];
-    profilePairs->pi = r->pi;
-    r = estimateDelta(profilePairs,args,r);
-    numPosArr[countRes] = profilePairs->numPos;
-    distArr[countRes] = i;
+    x = (i - args->m)/args->S;
+    profilePairs[x] = getProfilePairs(numProfiles, inclPro, contigDescr, fp, args, i);
+    profilePairs[x]->dist = i;
+    profilePairs[x]->pi = results[x]->pi;
+    numPosArr[x] = profilePairs[x]->numPos;
+    distArr[x] = i;
+    results[x] = estimateDelta(profilePairs[x],args,results[x]);
+    x++;
     countRes++;
-    freeProfilePairs(profilePairs);
   }
   for(i=0;i<countRes;i++){
     r = results[i];
@@ -127,7 +126,9 @@ void runAnalysis(Args *args){
     }
     writeLik(args->n,piRes);
   }
-  printf("numRes - 2: %d\n",numRes);
+  for(i=0;i<countRes;i++)
+    freeProfilePairs(profilePairs[i]);
+  free(profilePairs);
   for(i=0;i<numRes;i++)
     free(results[i]);
   free(results);
@@ -136,6 +137,7 @@ void runAnalysis(Args *args){
   free(numPosArr);
   free(piRes);
   freeMem();
+  freeMlComp();
 }
 
 void freeMem(){

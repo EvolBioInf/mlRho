@@ -19,19 +19,18 @@
 
 ProfilePairs *newProfilePairs(int numProfiles);
 Node **resetProfilePairs(Node **profilePairs, int numProfiles);
-ProfilePairs *countPairs(ProfilePairs *pp, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory);
+void countPairs(ProfilePairs *pp, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory);
 
 ProfilePairs *getProfilePairs(int numProfiles, char *inclPro, ContigDescr *contigDescr, FILE *fp, Args *args, int d){
   int i;
   ProfilePairs *pp = NULL;
 
   pp = newProfilePairs(numProfiles);
-  pp->numPos = 0;
   if(args->L){
     for(i=0;i<args->S;i++)
-      pp = countPairs(pp, inclPro, contigDescr, fp, d+i, args->o);
+      countPairs(pp, inclPro, contigDescr, fp, d+i, args->o);
   }else
-    pp = countPairs(pp, inclPro, contigDescr, fp, d, args->o);
+    countPairs(pp, inclPro, contigDescr, fp, d, args->o);
 
   return pp;
 }
@@ -74,7 +73,7 @@ void readPositions(FILE *fp, ContigDescr *cd){
 
 }
 
-ProfilePairs *countPairs(ProfilePairs *pp, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory){
+void countPairs(ProfilePairs *pp, char *inclPro, ContigDescr *contigDescr, FILE *fp, int dist, int memory){
   int a, b, i, l, r, tmp, numRead, bound;
   Position *pb;
   Node **pairs;
@@ -117,7 +116,6 @@ ProfilePairs *countPairs(ProfilePairs *pp, char *inclPro, ContigDescr *contigDes
       l++;
     }
   }
-  return pp;
 }
 
 /* addTree: add key to tree */

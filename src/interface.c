@@ -109,6 +109,8 @@ Args *getArgs(int argc, char *argv[]){
     }
     c = getopt(argc, argv, optString);
   }
+  if(args->T > 1)
+    args->o = 1;
   return args;
 }
 
